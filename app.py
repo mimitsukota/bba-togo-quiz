@@ -6,8 +6,8 @@ import streamlit.components.v1 as components
 # --- 初期設定 ---
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # 最も汎用性が高く、最新のモデル名に修正しました
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    # 1.5系がダメなら、最も普及している 1.0 Pro を指定します
+    model = genai.GenerativeModel('gemini-1.0-pro')
 except:
     st.error("APIキーの設定を確認してください。")
     st.stop()
@@ -28,8 +28,9 @@ def get_new_quiz():
     genre = random.choice(["どうぶつ", "きょうりゅう", "ようかい"])
     phrase = random.choice(["だーれだ？", "なーにかな？", "でしょう？"])
     
-    # AIへの命令（ひらがな指定を強化）
-    prompt = f"5歳児向けの{genre}クイズを1問作ってください。答えと問題文は「すべてひらがな」で。形式：答え:〇〇 改行 問題:〇〇"
+    # 乱数を混ぜて「同じ問題」を防ぐ
+    seed = random.randint(1, 1000)
+    prompt = f"命令番号{seed}: 5歳児向けの{genre}クイズを1問作ってください。答えと問題文は「すべてひらがな」で。形式：答え:〇〇 改行 問題:〇〇"
     
     try:
         response = model.generate_content(prompt)
@@ -41,14 +42,15 @@ def get_new_quiz():
         
         for line in lines:
             if "答え" in line or "こたえ" in line:
-                ans = line.split(":")[-1].strip()
+                ans = line.split(":")[-1].strip().replace(" ", "")
             if "問題" in line or "もんだい" in line:
                 hint = line.split(":")[-1].strip()
                 
         return {"genre": genre, "ans": ans, "hint": hint, "phrase": phrase}
     except Exception as e:
-        # エラーが出た場合、その内容を表示
-        return {"genre": "エラー", "ans": "再読み込みしてね", "hint": str(e), "phrase": "？"}
+        # エラーが起きた場合、その「名前」を表示
+        error_msg = str(e)
+        return {"genre": "通信中", "ans": "エラー", "hint": error_msg, "phrase": "？"}
 
 # --- 画面の管理 ---
 if 'quiz_data' not in st.session_state:
