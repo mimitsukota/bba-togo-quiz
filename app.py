@@ -3,7 +3,7 @@ import random
 from gtts import gTTS
 import os
 
-# --- 1. クイズリスト ---
+# --- 1. クイズリスト（すべて ひらがな） ---
 def get_mimitsuko_quiz():
     quizzes = [
         {"genre": "きょうりゅう", "q": "つのが さんぼんあって、かおの まわりに フリルが あるのは？", "a": "とりけらとぷす", "img": "🦖"},
@@ -26,13 +26,13 @@ if 'show_answer' not in st.session_state:
 if 'play_audio' not in st.session_state:
     st.session_state.play_audio = None
 
-st.title("🦖 ばあばの 特製クイズ 🎁")
+# タイトルを「とうごはかせのてんさいクイズ」に変更！
+st.title("🎓 とうごはかせの てんさいクイズ 🦖")
 
 # --- つぎのもんだい ボタン ---
 if st.button("🌟 つぎの もんだい", use_container_width=True):
     st.session_state.my_quiz = get_mimitsuko_quiz()
     st.session_state.show_answer = False
-    # 問題文を音声ファイルにする
     tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
     tts.save("q.mp3")
     st.session_state.play_audio = "q.mp3"
@@ -48,8 +48,7 @@ st.write(f"## {q['q']}")
 if not st.session_state.show_answer:
     if st.button("💡 こたえを みる", use_container_width=True):
         st.session_state.show_answer = True
-        # 答えの文章を音声ファイルにする
-        a_text = f"せいかいは、{q['a']} だよ！"
+        a_text = f"せいかいは、{q['a']} だよ！ さすが とうごはかせ！"
         tts = gTTS(a_text, lang='ja')
         tts.save("a.mp3")
         st.session_state.play_audio = "a.mp3"
@@ -58,11 +57,10 @@ if not st.session_state.show_answer:
 # --- 答えの表示 ---
 if st.session_state.show_answer:
     st.balloons()
-    st.success(f"### せいかいは・・・\n# 「{q['a']}」だよ！ {q['img']}")
+    # メッセージも博士向けに
+    st.success(f"### せいかい！\n# 「{q['a']}」だよ！ {q['img']}\n\nさすが とうごはかせだね！")
 
-# --- 音声再生の実行（ここがポイント！） ---
+# --- 音声再生 ---
 if st.session_state.play_audio:
-    # 画面が切り替わった直後に、用意された音声を再生する
     st.audio(st.session_state.play_audio, autoplay=True)
-    # 一度再生したらリセット（何度も鳴らないように）
     st.session_state.play_audio = None
