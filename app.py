@@ -3,7 +3,7 @@ import random
 from gtts import gTTS
 import os
 
-# --- 1. ばあば特選！クイズリスト（ぜんぶ ひらがな） ---
+# --- 1. クイズリスト ---
 def get_mimitsuko_quiz():
     quizzes = [
         {"genre": "きょうりゅう", "q": "つのが さんぼんあって、かおの まわりに フリルが あるのは？", "a": "とりけらとぷす", "img": "🦖"},
@@ -18,31 +18,27 @@ def get_mimitsuko_quiz():
     ]
     return random.choice(quizzes)
 
-# 音声ファイル作成関数
-def speak(text, filename):
-    tts = gTTS(text, lang='ja')
-    tts.save(filename)
-    return filename
-
-# --- 2. アプリの表示設定 ---
-st.title("🦖 ばあばの 特製クイズ 🎁")
-
-# 状態の初期化
+# --- 2. 状態の初期化 ---
 if 'my_quiz' not in st.session_state:
     st.session_state.my_quiz = get_mimitsuko_quiz()
 if 'show_answer' not in st.session_state:
     st.session_state.show_answer = False
+if 'play_audio' not in st.session_state:
+    st.session_state.play_audio = None
+
+st.title("🦖 ばあばの 特製クイズ 🎁")
 
 # --- つぎのもんだい ボタン ---
 if st.button("🌟 つぎの もんだい", use_container_width=True):
     st.session_state.my_quiz = get_mimitsuko_quiz()
     st.session_state.show_answer = False
-    # 問題の音声を作成して再生
-    q_file = speak(st.session_state.my_quiz['q'], "q.mp3")
-    st.audio(q_file, autoplay=True)
+    # 問題文を音声ファイルにする
+    tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
+    tts.save("q.mp3")
+    st.session_state.play_audio = "q.mp3"
     st.rerun()
 
-# --- クイズ表示エリア ---
+# --- クイズ表示 ---
 q = st.session_state.my_quiz
 st.divider()
 st.info(f"じゃんる：{q['genre']}")
@@ -52,16 +48,21 @@ st.write(f"## {q['q']}")
 if not st.session_state.show_answer:
     if st.button("💡 こたえを みる", use_container_width=True):
         st.session_state.show_answer = True
-        # 答えの音声を作成して再生
+        # 答えの文章を音声ファイルにする
         a_text = f"せいかいは、{q['a']} だよ！"
-        a_file = speak(a_text, "a.mp3")
-        st.audio(a_file, autoplay=True)
+        tts = gTTS(a_text, lang='ja')
+        tts.save("a.mp3")
+        st.session_state.play_audio = "a.mp3"
         st.rerun()
 
 # --- 答えの表示 ---
 if st.session_state.show_answer:
     st.balloons()
     st.success(f"### せいかいは・・・\n# 「{q['a']}」だよ！ {q['img']}")
-    # 答えが表示されている間、もう一度音声を聴けるボタン
-    if st.button("🔊 もういちど きく"):
-        st.audio("a.mp3", autoplay=True)
+
+# --- 音声再生の実行（ここがポイント！） ---
+if st.session_state.play_audio:
+    # 画面が切り替わった直後に、用意された音声を再生する
+    st.audio(st.session_state.play_audio, autoplay=True)
+    # 一度再生したらリセット（何度も鳴らないように）
+    st.session_state.play_audio = None
