@@ -5,9 +5,9 @@ import streamlit.components.v1 as components
 
 # --- 初期設定 ---
 try:
-    # モデル名を最新のもの（models/gemini-1.5-flash）に変更しました
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('models/gemini-1.5-flash')
+    # モデル名を「gemini-pro」という、より汎用的な名前に変更します
+    model = genai.GenerativeModel('gemini-pro')
 except:
     st.error("APIキーの設定を確認してください。")
     st.stop()
@@ -28,7 +28,7 @@ def get_new_quiz():
     genre = random.choice(["どうぶつ", "きょうりゅう", "ようかい"])
     phrase = random.choice(["だーれだ？", "なーにかな？", "でしょう？"])
     
-    # AIへの命令（プロンプト）
+    # AIへの命令
     prompt = f"5歳児向けの{genre}クイズを1問作ってください。答えと問題文はひらがなとカタカナのみ。形式：答え:〇〇 改行 問題:〇〇"
     
     try:
@@ -43,8 +43,8 @@ def get_new_quiz():
                 hint = line.split(":")[-1].strip()
         return {"genre": genre, "ans": ans, "hint": hint, "phrase": phrase}
     except Exception as e:
-        # エラーが起きたら画面に表示（デバッグ用）
-        return {"genre": "エラー", "ans": "エラー", "hint": str(e), "phrase": "？"}
+        # 万が一エラーが出た場合、その内容を表示します
+        return {"genre": "エラー", "ans": "再試行してください", "hint": str(e), "phrase": "？"}
 
 # --- 画面の管理 ---
 if 'quiz_data' not in st.session_state:
@@ -61,7 +61,6 @@ st.subheader(full_question)
 if not st.session_state.is_answered:
     speak(full_question)
 
-# ボタン
 col1, col2 = st.columns(2)
 
 with col1:
