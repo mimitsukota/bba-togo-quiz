@@ -1,23 +1,27 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.title("APIキーの 健康診断 🩺")
+st.title("AIむげんクイズ 🤖")
 
-# 金庫の中にそもそも何か入っているか確認
-if "GEMINI_API_KEY" not in st.secrets:
-    st.error("金庫（Secrets）の中に 'GEMINI_API_KEY' という名前が見当たりません。")
-else:
-    key = st.secrets["GEMINI_API_KEY"]
-    st.write(f"金庫の中にキーは見つかりました！（長さ：{len(key)}文字）")
-    
+# 最新の「正式な」設定方法で接続します
+if "GEMINI_API_KEY" in st.secrets:
     try:
-        genai.configure(api_key=key)
+        # 窓口を正式版（v1）に固定するおまじない
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        
+        # モデル名の指定を一番確実なものに
         model = genai.GenerativeModel('gemini-1.5-flash')
-        # 一番簡単なテスト
-        response = model.generate_content("「OK」と言って")
-        st.success("おめでとうございます！通信がつながりました！")
+        
+        # 通信テスト
+        response = model.generate_content("「やったね」とひらがなで言って")
+        
+        st.success("やったー！通信がつながりました！")
         st.balloons()
+        st.write("AIからのメッセージ:", response.text)
+        st.write("これでクイズ画面に戻る準備ができました。")
+        
     except Exception as e:
-        st.error("キーは見つかりましたが、Googleさんが『そのキーは使えないよ』と言っています。")
-        st.info("【対策】もう一度 AI Studio で新しいキーを作り直して、貼り直してみるのが一番の近道です。")
+        st.error("新しいキーでもまだエラーが出ています...")
         st.code(str(e))
+else:
+    st.warning("金庫にキーを設定してください。")
