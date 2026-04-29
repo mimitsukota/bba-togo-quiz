@@ -1,20 +1,29 @@
+
 import streamlit as st
 import random
 from gtts import gTTS
 import os
 import pandas as pd
 
-# --- 1. エクセル(CSV)からクイズを読み込む設定に変更！ ---
+# --- 1. クイズリストを読み込む関数 ---
 def get_mimitsuko_quiz():
     try:
-        # ここで、アップロードした quiz_data.csv を読み込みます
+        # GitHubにアップロードした quiz_data.csv を読み込みます
         df = pd.read_csv('quiz_data.csv')
-        # その中からランダムに1行選んでクイズにします
+        # ランダムに1行選んで辞書形式にします
         quiz_dict = df.sample(n=1).iloc[0].to_dict()
         return quiz_dict
     except Exception as e:
-        # もし読み込みに失敗した時のための予備（保険です）
-        return {"genre": "きょうりゅう", "q": "つのが さんぼんあるのは？", "a": "とりけらとぷす", "img": "🦖"}
+        # 万が一CSVが読み込めなかった時のための「保険」のリスト
+        # mimitsukoさんの最新の修正（削除と修正）を反映済みです
+        backup_quizzes = [
+            {"genre": "きょうりゅう", "q": "つのが さんぼんあって、かおの まわりに フリルが あるのは？", "a": "とりけらとぷす", "img": "🦖"},
+            {"genre": "きょうりゅう", "q": "きょうりゅうの おうさまで、てが とっても ちいさいのは？", "a": "てぃらのさうるす", "img": "👑"},
+            {"genre": "どうぶつ", "q": "おはなが ながーくて、おみみが パタパタ。だーれだ？", "a": "ぞう", "img": "🐘"},
+            {"genre": "ようかい", "q": "あたまに おさらが あって、きゅうりが だいすきなのは？", "a": "かっぱ", "img": "🥒"},
+            {"genre": "ようかい", "q": "ふるい ちょうちんが ばけもので、ぺろっと したを だしているのは？", "a": "ちょうちんおばけ", "img": "🏮"}
+        ]
+        return random.choice(backup_quizzes)
 
 # --- 2. 状態の初期化 ---
 if 'my_quiz' not in st.session_state:
@@ -53,10 +62,17 @@ if not st.session_state.show_answer:
         st.session_state.play_audio = "a.mp3"
         st.rerun()
 
-# --- 答えの表示 ---
+# --- 答えの表示（画像対応の準備もしておきました） ---
 if st.session_state.show_answer:
     st.balloons()
-    st.success(f"### せいかい！\n# 「{q['a']}」だよ！ {q['img']}\n\nさすが とうごはかせだね！")
+    st.success(f"### せいかい！\n# 「{q['a']}」だよ！")
+    
+    # 明日の画像作業のために、表示する仕組みだけ作っておきました
+    if 'url' in q and pd.notnull(q['url']):
+        # CSVのurl列にファイル名が入っていれば表示されます
+        st.image(q['url'], caption=f"ほんものの {q['a']}", use_container_width=True)
+    
+    st.write(f"さすが とうごはかせだね！")
 
 # --- 音声再生の実行 ---
 if st.session_state.play_audio:
