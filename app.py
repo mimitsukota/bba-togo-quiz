@@ -11,6 +11,7 @@ def get_mimitsuko_quiz():
         quiz_dict = df.sample(n=1).iloc[0].to_dict()
         return quiz_dict
     except Exception as e:
+        # バックアップ用リスト（ここも「ちょうちんおばけ」に修正済み）
         backup_quizzes = [
             {"genre": "きょうりゅう", "q": "つのが さんぼんあって、かおの まわりに フリルが あるのは？", "a": "とりけらとぷす", "img": "🦖"},
             {"genre": "ようかい", "q": "あたまに おさらが あって、きゅうりが だいすきなのは？", "a": "かっぱ", "img": "🥒"},
@@ -28,10 +29,11 @@ if 'play_audio' not in st.session_state:
 
 st.title("🎓 とうごはかせの てんさいクイズ 🦖")
 
-# --- つぎのもんだい ボタン（上） ---
+# --- つぎのもんだい ボタン ---
 if st.button("🌟 つぎの もんだい", use_container_width=True):
     st.session_state.my_quiz = get_mimitsuko_quiz()
     st.session_state.show_answer = False
+    # 問題の音声を生成
     tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
     tts.save("q.mp3")
     st.session_state.play_audio = "q.mp3"
@@ -40,23 +42,24 @@ if st.button("🌟 つぎの もんだい", use_container_width=True):
 # --- クイズ表示エリア ---
 q = st.session_state.my_quiz
 st.divider()
-
-# ジャンルを大きく太字で表示
-st.markdown(f"## 🏷️ **{q['genre']}**")
-# 問題文を表示
+st.divider()
+# ↓ここを書き換えます！
+st.markdown(f"## 🏷️ **{q['genre']}**") 
 st.write(f"### {q['q']}")
+st.write(f"## {q['q']}")
 
 # --- こたえをみる ボタン ---
 if not st.session_state.show_answer:
     if st.button("💡 こたえを みる", use_container_width=True):
         st.session_state.show_answer = True
+        # 音声を「せいかいは○○だよ」だけに修正
         a_text = f"せいかいは、{q['a']} だよ。"
         tts = gTTS(a_text, lang='ja')
         tts.save("a.mp3")
         st.session_state.play_audio = "a.mp3"
         st.rerun()
 
-# --- 答えの表示 ---
+# --- 答えの表示（風船アニメーションを削除しました） ---
 if st.session_state.show_answer:
     st.success(f"### せいかい！\n# 「{q['a']}」だよ！")
     
@@ -64,20 +67,20 @@ if st.session_state.show_answer:
     if 'url' in q and pd.notnull(q['url']):
         st.image(q['url'], caption=f"ほんものの {q['a']}", use_container_width=True)
     
+    # テキストからも「さすが…」を消してスッキリさせました
     st.write(f"つぎの もんだいも がんばろう！")
 
 # --- 音声再生の実行 ---
 if st.session_state.play_audio:
     st.audio(st.session_state.play_audio, autoplay=True)
     st.session_state.play_audio = None
-
 # --- 画面の一番下にも「つぎのもんだい」ボタンを追加 ---
-if st.session_state.show_answer:
-    st.divider()
-    if st.button("🌟 つぎの もんだいへ！", key="bottom_button", use_container_width=True):
-        st.session_state.my_quiz = get_mimitsuko_quiz()
-        st.session_state.show_answer = False
-        tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
-        tts.save("q.mp3")
-        st.session_state.play_audio = "q.mp3"
-        st.rerun()
+st.divider() # 区切り線
+if st.button("🌟 つぎの もんだいへ！", key="bottom_button", use_container_width=True):
+    st.session_state.my_quiz = get_mimitsuko_quiz()
+    st.session_state.show_answer = False
+    # 問題の音声を生成
+    tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
+    tts.save("q.mp3")
+    st.session_state.play_audio = "q.mp3"
+    st.rerun()
