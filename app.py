@@ -71,4 +71,13 @@ if st.session_state.show_answer:
 if st.session_state.play_audio:
     st.audio(st.session_state.play_audio, autoplay=True)
     st.session_state.play_audio = None
-
+# --- 画面の一番下にも「つぎのもんだい」ボタンを追加 ---
+st.divider() # 区切り線
+if st.button("🌟 つぎの もんだいへ！", key="bottom_button", use_container_width=True):
+    st.session_state.my_quiz = get_mimitsuko_quiz()
+    st.session_state.show_answer = False
+    # 問題の音声を生成
+    tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
+    tts.save("q.mp3")
+    st.session_state.play_audio = "q.mp3"
+    st.rerun()
