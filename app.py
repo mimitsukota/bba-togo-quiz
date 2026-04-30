@@ -42,7 +42,10 @@ if st.button("🌟 つぎの もんだい", use_container_width=True):
 # --- クイズ表示エリア ---
 q = st.session_state.my_quiz
 st.divider()
-st.info(f"じゃんる：{q['genre']}")
+st.divider()
+# ↓ここを書き換えます！
+st.markdown(f"## 🏷️ **{q['genre']}**") 
+st.write(f"### {q['q']}")
 st.write(f"## {q['q']}")
 
 # --- こたえをみる ボタン ---
