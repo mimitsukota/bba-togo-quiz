@@ -24,6 +24,11 @@ def get_mimitsuko_quiz():
 # --- 2. 状態の初期化 ---
 if 'my_quiz' not in st.session_state:
     st.session_state.my_quiz = get_mimitsuko_quiz()
+    # 🌟 最初の1問目の音声もここで作っておきます
+    tts = gTTS(st.session_state.my_quiz['q'], lang='ja')
+    tts.save("q.mp3")
+    st.session_state.play_audio = "q.mp3"
+
 if 'show_answer' not in st.session_state:
     st.session_state.show_answer = False
 if 'play_audio' not in st.session_state:
@@ -48,7 +53,7 @@ st.divider()
 # ジャンルの表示
 st.markdown(f"## 🏷️ **{q['genre']}**") 
 
-# 問題文の表示（1回だけにしました！）
+# 問題文の表示
 st.write(f"### {q['q']}")
 
 # --- こたえをみる ボタン ---
